@@ -1,0 +1,155 @@
+{
+  "name": "Bumi Trasa SOP Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2ed3ae46-6b08-43d4-980f-e735ee4a1e83",
+      "name": "Telegram Trigger",
+      "notes": "Requires WEBHOOK_URL pointing at an HTTPS tunnel (ngrok or similar).",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "Kamu adalah SOP Assistant untuk PT Bumi Trasa Infrastruktur, kontraktor spesialis jalan, jembatan, dan drainase.\n\nPeranmu: membantu tim internal (pengawas lapangan, engineer, admin proyek) menjawab pertanyaan seputar:\n- SOP kerja (persiapan lahan, pengecoran, pemadatan tanah, dll)\n- Prosedur K3 (APD wajib, protokol kerja di ketinggian, penanganan alat berat)\n- Spesifikasi material standar (mutu beton, jenis agregat, toleransi ukuran)\n- Alur administrasi proyek internal (pengajuan izin kerja, laporan harian)\n\nGunakan bahasa Indonesia yang jelas dan profesional, sesuai konteks kerja lapangan.\n\nJika ditanya hal di luar cakupan (harga proyek klien, negosiasi kontrak, topik pribadi, atau hal umum di luar konstruksi), sampaikan dengan sopan bahwa itu di luar cakupanmu dan arahkan ke supervisor/departemen terkait.\n\nJika informasi spesifik proyek tidak tersedia dalam datamu, katakan terus terang kamu tidak punya data itu — jangan mengarang angka spek teknis atau prosedur K3, karena ini menyangkut keselamatan kerja.\n\nJawaban singkat, langsung ke poin, format list kalau langkah-langkah lebih dari 2 poin."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "be824db5-d883-40df-a994-d0869bfbc7e2",
+      "name": "AI Agent",
+      "notes": "Same architecture as the Kahfka bot. Only the system prompt changed."
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}_v2"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        368,
+        240
+      ],
+      "id": "58f322d5-5a77-413b-9c2d-d3d415bc383a",
+      "name": "Simple Memory",
+      "notes": "Session keyed per Telegram chat so conversations stay separated."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        576,
+        0
+      ],
+      "id": "48e4d3ee-fbec-4e88-a28e-d3cf5187da0f",
+      "name": "Send a text message",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        240
+      ],
+      "id": "ecc7ae80-ab83-4929-8a61-3bf64ccff087",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "REPLACE_WITH_YOUR_CREDENTIAL_ID",
+          "name": "Google Gemini API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
