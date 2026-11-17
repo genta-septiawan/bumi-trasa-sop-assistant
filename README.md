@@ -66,10 +66,10 @@ Identical to the retail version. The entire domain shift lives inside the AI Age
 
 ## Demo
 
-![Workflow](screenshots/bumi-trasa-canvas.png)
+![Workflow](screenshot/bumi-trasa-canvas.png)
 
 **Live conversation — a clean refusal, and an answer that shows the ceiling of this approach**
-![Telegram demo](screenshots/bumi-trasa-demo.png)
+![Telegram demo](screenshot/bumi-trasa-demo.png)
 
 Two things are visible in that exchange, and the second one matters more.
 
@@ -138,7 +138,7 @@ bumi-trasa-sop-assistant/
 ├── LICENSE
 ├── workflow/
 │   └── bumi-trasa-sop-assistant.json
-└── screenshots/
+└── screenshot/
     ├── bumi-trasa-canvas.png
     └── bumi-trasa-demo.png
 ```
